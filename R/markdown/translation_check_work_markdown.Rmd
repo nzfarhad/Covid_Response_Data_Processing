@@ -1,0 +1,283 @@
+---
+title: "Covid-Response Translation Tracker"
+author: "ATR, Data Department"
+
+output: html_document
+---
+
+
+```{css, echo=FALSE}
+
+# .line-block{
+#   text-align: justify;
+# }
+# 
+# p{
+#   text-align: justify;
+# }
+# 
+# *{
+#   font-family:'Trebuchet MS';font-weight:normal;
+# }
+# 
+# .grey{
+#   color: rgb(64,64,64) !important;
+#   text-align: justify;
+# }
+# 
+# .grey2{
+#   color: rgb(64,64,64) !important;
+#   text-align: justify;
+#   font-size: 10pt;
+# }
+# 
+# .title {
+#   color: rgb(33,143,139) !important;
+#   
+# }
+# 
+# h1.title {
+#     
+# }
+# 
+# .table01 table {
+#   
+# }
+# 
+# @font-face {
+#     font-family: 'Trebuchet MS';
+#     font-style: normal;
+#     font-weight: normal;
+#     src: local('Trebuchet MS'), url('trebuc.woff') format('woff');
+#     }
+
+```
+
+
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE}
+library(dplyr)
+library(readxl)
+library(ggplot2)
+library(kableExtra)
+source("translation_check_functions.R")
+
+direct_observation <- read_excel("output/latest_data/direct_observation/direct_observation.xlsx")
+Form_1 <- read_excel("output/latest_data/pre_distribution_form1/pre_distribution_form1.xlsx")
+Form_2 <- read_excel("output/latest_data/pre_distribution_form2/Pre_Distribution_form2.xlsx")
+# direct_observation <- read_excel("output/latest_data/direct_observation/TPMA-REACH Direct Observation FORM.xlsx")
+
+
+do_missing_translation <- do_translation_check(direct_observation)
+do_missing_translation_valid <- filter(do_missing_translation, Status_QA_Log %in% c("Approved", "Pending"))
+
+
+do_plot_data <- do_missing_translation_valid %>%
+  group_by(weekly_reporting_round, translation_status) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct))
+
+
+form1_missing_translation <- form1_translation_check(Form_1)
+form1_missing_translation_valid <- filter(form1_missing_translation, Status_QA_Log %in% c("Approved", "Pending"))
+
+
+form1_plot_data <- form1_missing_translation_valid %>%
+  group_by(weekly_reporting_round, translation_status) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct))
+# Form2 -------------------------------------------------------------------
+form2_missing_translation <- form2_translation_check(Form_2)
+form2_missing_translation_valid <- filter(form2_missing_translation, Status_QA_Log %in% c("Approved", "Pending"))
+
+
+form2_plot_data <- form2_missing_translation_valid %>%
+  group_by(weekly_reporting_round, translation_status) %>%
+  summarize(n = n()) %>% 
+  mutate(pct = n/sum(n),
+         lbl = scales::percent(pct))
+
+
+
+
+```
+Last Updated: `r date()`  
+
+### Method
+
+
+Missing translation are calculated by checking every audio question that needs to be translated. If a single datapoint in a survey is not translated, the entire survey is classified as “Incomplete” for translation. Following plots show the overall progress, for more detailed report at survey and question level, please check the excel files. *The number 999 indicates newly submitted data.*
+
+
+### Direct Observation {.tabset}
+
+#### Progress, Percentage
+
+
+```{r do, warning=FALSE, echo=FALSE, fig.width= 12 }
+
+
+ggplot(do_plot_data, aes(x = as.factor(weekly_reporting_round), y = pct, fill = translation_status )) +
+  geom_bar(stat = "identity", position = "fill") +
+  geom_text(aes(label = lbl), 
+            size = 3, 
+            position = position_stack(vjust = 0.5)) +
+  labs(y = "Percent", 
+       fill = "Translation",
+       x = "Week",
+       title = "Direct Observation Translation Progress") +
+  scale_fill_manual("Translation", values = c("Complete" = "#01b8aa", "Incomplete" = "#fd625e")) +
+  theme_minimal()  +
+  theme(text = element_text(family = "Trebuchet MS", size = 12),panel.background = element_blank(),
+        axis.ticks = element_blank(), axis.line = element_blank(),
+        axis.text = element_text(size = 10), axis.title = element_text(size = 10)
+        )
+
+```
+
+#### Progress, Frequency
+```{r do numbers, warning=FALSE, echo=FALSE, fig.width= 12 }
+
+
+ggplot(do_plot_data, aes(x = as.factor(weekly_reporting_round), y = n, fill = translation_status )) +
+  geom_bar(stat = "identity", position = "stack") +
+  geom_text(aes(label = n), 
+            size = 3, 
+            position = position_stack(vjust = 0.5)) +
+  labs(y = "Number of Interviews", 
+       fill = "Translation",
+       x = "Week",
+       title = "Direct Observation Translation Progress") +
+  scale_fill_manual("Translation", values = c("Complete" = "#01b8aa", "Incomplete" = "#fd625e")) +
+  theme_minimal()  +
+  theme(text = element_text(family = "Trebuchet MS", size = 12),panel.background = element_blank(),
+        axis.ticks = element_blank(), axis.line = element_blank(),
+        axis.text = element_text(size = 10), axis.title = element_text(size = 10)
+  )
+
+```
+
+#### Data
+```{r do data, warning=FALSE, echo=FALSE, fig.width= 12 }
+
+do_plot_data %>% select(Week = weekly_reporting_round, `Translation Status` = translation_status, Surveys = n, Progress = lbl) %>%
+  kbl(align = "c") %>% kable_classic(full_width = F, html_font = "Cambria")
+
+
+```
+
+
+
+### Pre-Distribution Form1 {.tabset}
+
+#### Progress, Percentage
+
+
+```{r form1, warning=FALSE, echo=FALSE, fig.width= 12 }
+
+
+ggplot(form1_plot_data, aes(x = as.factor(weekly_reporting_round), y = pct, fill = translation_status )) +
+  geom_bar(stat = "identity", position = "fill") +
+  geom_text(aes(label = lbl), 
+            size = 3, 
+            position = position_stack(vjust = 0.5)) +
+  labs(y = "Percent", 
+       fill = "Translation",
+       x = "Week",
+       title = "Pre-distribution form1 Translation Progress") +
+  scale_fill_manual("Translation", values = c("Complete" = "#01b8aa", "Incomplete" = "#fd625e")) +
+  theme_minimal()  +
+  theme(text = element_text(family = "Trebuchet MS", size = 12),panel.background = element_blank(),
+        axis.ticks = element_blank(), axis.line = element_blank(),
+        axis.text = element_text(size = 10), axis.title = element_text(size = 10)
+  )
+
+```
+
+#### Progress, Frequency
+```{r form1 numbers, warning=FALSE, echo=FALSE, fig.width= 12 }
+
+
+ggplot(form1_plot_data, aes(x = as.factor(weekly_reporting_round), y = n, fill = translation_status )) +
+  geom_bar(stat = "identity", position = "stack") +
+  geom_text(aes(label = n), 
+            size = 3, 
+            position = position_stack(vjust = 0.5)) +
+  labs(y = "Number of Interviews", 
+       fill = "Translation",
+       x = "Week",
+       title = "Pre-distribution form1 Translation Progress") +
+  scale_fill_manual("Translation", values = c("Complete" = "#01b8aa", "Incomplete" = "#fd625e")) +
+  theme_minimal()  +
+  theme(text = element_text(family = "Trebuchet MS", size = 12),panel.background = element_blank(),
+        axis.ticks = element_blank(), axis.line = element_blank(),
+        axis.text = element_text(size = 10), axis.title = element_text(size = 10)
+  )
+
+```
+
+#### Data
+```{r form1 data, warning=FALSE, echo=FALSE, fig.width= 12 }
+
+form1_plot_data %>% select(Week = weekly_reporting_round, `Translation Status` = translation_status, Surveys = n, Progress = lbl) %>%
+  kbl(align = "c") %>% kable_classic(full_width = F, html_font = "Cambria")
+
+
+```
+
+
+
+### Pre-Distribution Form2 {.tabset}
+
+#### Progress, Percentage
+
+```{r form2, warning=FALSE, echo=FALSE, fig.width= 12 }
+ggplot(form2_plot_data, aes(x = as.factor(weekly_reporting_round), y = pct, fill = translation_status )) +
+  geom_bar(stat = "identity", position = "fill") +
+  geom_text(aes(label = lbl), 
+            size = 3, 
+            position = position_stack(vjust = 0.5)) +
+  labs(y = "Percent", 
+       fill = "Translation",
+       x = "Week",
+       title = "Pre-distribution form2 Translation Progress") +
+  scale_fill_manual("Translation", values = c("Complete" = "#01b8aa", "Incomplete" = "#fd625e")) +
+  theme_minimal()  +
+  theme(text = element_text(family = "Trebuchet MS", size = 12),panel.background = element_blank(),
+        axis.ticks = element_blank(), axis.line = element_blank(),
+        axis.text = element_text(size = 10), axis.title = element_text(size = 10)
+  )
+```
+
+#### Progress, Frequency
+```{r form2 numbers, warning=FALSE, echo=FALSE, fig.width= 12 }
+
+ggplot(form2_plot_data, aes(x = as.factor(weekly_reporting_round), y = n, fill = translation_status )) +
+  geom_bar(stat = "identity", position = "stack") +
+  geom_text(aes(label = n), 
+            size = 3, 
+            position = position_stack(vjust = 0.5)) +
+  labs(y = "Number of Interviews", 
+       fill = "Translation",
+       x = "Week",
+       title = "Pre-distribution form2 Translation Progress") +
+  scale_fill_manual("Translation", values = c("Complete" = "#01b8aa", "Incomplete" = "#fd625e")) +
+  theme_minimal()  +
+  theme(text = element_text(family = "Trebuchet MS", size = 12),panel.background = element_blank(),
+        axis.ticks = element_blank(), axis.line = element_blank(),
+        axis.text = element_text(size = 10), axis.title = element_text(size = 10)
+  )
+```
+
+#### Data
+```{r form2 data, warning=FALSE, echo=FALSE, fig.width= 12 }
+
+form2_plot_data %>% select(Week = weekly_reporting_round, `Translation Status` = translation_status, Surveys = n, Progress = lbl) %>%
+  kbl(align = "c") %>% kable_classic(full_width = F, html_font = "Cambria")
+
+
+```
+
+
