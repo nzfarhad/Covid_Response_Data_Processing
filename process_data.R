@@ -337,8 +337,8 @@ write.xlsx(do_list, paste0("output/proccessed_raw_data/direct_observation/REACH 
 write.xlsx(form1_list, paste0("output/proccessed_raw_data/pre_distribution_form1/REACH PRE-DISTRIBUTION FORM 1_",today(),".xlsx" ))
 write.xlsx(form2_list, paste0("output/proccessed_raw_data/pre_distribution_form2/REACH PRE-DISTRIBUTION FORM 2_",today(),".xlsx" ))
 
-write.xlsx(do_list, paste0("output/proccessed_raw_data/latest_data/direct_observation/REACH Direct Observation Form.xlsx" ))
-write.xlsx(form1_list, paste0("output/proccessed_raw_data/latest_data/pre_distribution_form1/REACH PRE-DISTRIBUTION FORM 1.xlsx" ))
+write.xlsx(do_list, paste0("output/proccessed_raw_data/latest_data/REACH Direct Observation Form.xlsx" ))
+write.xlsx(form1_list, paste0("output/proccessed_raw_data/latest_data/REACH PRE-DISTRIBUTION FORM 1.xlsx" ))
 write.xlsx(form2_list, paste0("output/proccessed_raw_data/latest_data/REACH PRE-DISTRIBUTION FORM 2.xlsx" ))
 
 # Week Specific Data ------------------------------------------------------
