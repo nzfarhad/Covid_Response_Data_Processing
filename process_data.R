@@ -57,6 +57,12 @@ do_main_extra_cols <- c(
 
 do_main <- do_main %>% select(-any_of(do_main_extra_cols))
 
+### Format Dates
+do_main$Starttime <- substr(do_main$Starttime, 5, 24)
+do_main$Startdate <- as.Date(do_main$Starttime, "%b %d %Y %H:%M:%S")
+do_main$Endtime <- substr(do_main$Endtime, 5, 24)
+do_main$Enddate <- as.Date(do_main$Endtime, "%b %d %Y %H:%M:%S")
+
 
 ### Pre-distribution Form1
 path_form1 <- "input/data_downlaods/latest_data/REACH PRE-DISTRIBUTION FORM 1.xlsx"
@@ -104,6 +110,13 @@ form1_extra_cols <- c(
 
 form1_main <- form1_main %>% select(-any_of(form1_extra_cols))
 
+### Format Dates
+form1_main$Starttime <- substr(form1_main$Starttime, 5, 24)
+form1_main$Startdate <- as.Date(form1_main$Starttime, "%b %d %Y %H:%M:%S")
+form1_main$Endtime <- substr(form1_main$Endtime, 5, 24)
+form1_main$Enddate <- as.Date(form1_main$Endtime, "%b %d %Y %H:%M:%S")
+
+
 ### Pre-distribution From2
 path_form2 <- "input/data_downlaods/latest_data/REACH PRE-DISTRIBUTION FORM 2.xlsx"
 path_form2_cto_tool <- "input/cto_tool/Form2.xlsx"
@@ -148,6 +161,13 @@ form2_extra_cols <- c(
 )
 
 form2_main <- form2_main %>% select(-any_of(form2_extra_cols))
+
+### Format Dates
+form2_main$Starttime <- substr(form2_main$Starttime, 5, 24)
+form2_main$Startdate <- as.Date(form2_main$Starttime, "%b %d %Y %H:%M:%S")
+form2_main$Endtime <- substr(form2_main$Endtime, 5, 24)
+form2_main$Enddate <- as.Date(form2_main$Endtime, "%b %d %Y %H:%M:%S")
+
 
 # Label Data --------------------------------------------------------------
 
