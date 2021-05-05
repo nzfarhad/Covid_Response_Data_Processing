@@ -58,10 +58,13 @@ do_main_extra_cols <- c(
 do_main <- do_main %>% select(-any_of(do_main_extra_cols))
 
 ### Format Dates
-do_main$Starttime <- substr(do_main$Starttime, 5, 24)
-do_main$Startdate <- as.Date(do_main$Starttime, "%b %d %Y %H:%M:%S")
-do_main$Endtime <- substr(do_main$Endtime, 5, 24)
-do_main$Enddate <- as.Date(do_main$Endtime, "%b %d %Y %H:%M:%S")
+do_main$SubmissionDate <- as.Date(do_main$SubmissionDate, origin = "1899-12-30")
+do_main <- do_main %>% mutate(
+  Starttime = substr(Starttime, 5, 24),
+  Endtime = substr(Endtime, 5, 24),
+  Startdate =  as.Date(Starttime, "%b %d %Y %H:%M:%S"),
+  Enddate = as.Date(Endtime, "%b %d %Y %H:%M:%S"),
+  .after = Endtime )
 
 
 ### Pre-distribution Form1
@@ -111,10 +114,13 @@ form1_extra_cols <- c(
 form1_main <- form1_main %>% select(-any_of(form1_extra_cols))
 
 ### Format Dates
-form1_main$Starttime <- substr(form1_main$Starttime, 5, 24)
-form1_main$Startdate <- as.Date(form1_main$Starttime, "%b %d %Y %H:%M:%S")
-form1_main$Endtime <- substr(form1_main$Endtime, 5, 24)
-form1_main$Enddate <- as.Date(form1_main$Endtime, "%b %d %Y %H:%M:%S")
+form1_main$SubmissionDate <- as.Date(form1_main$SubmissionDate, origin = "1899-12-30")
+form1_main <- form1_main %>% mutate(
+  Starttime = substr(Starttime, 5, 24),
+  Endtime = substr(Endtime, 5, 24),
+  Startdate =  as.Date(Starttime, "%b %d %Y %H:%M:%S"),
+  Enddate = as.Date(Endtime, "%b %d %Y %H:%M:%S"),
+  .after = Endtime )
 
 
 ### Pre-distribution From2
@@ -163,10 +169,13 @@ form2_extra_cols <- c(
 form2_main <- form2_main %>% select(-any_of(form2_extra_cols))
 
 ### Format Dates
-form2_main$Starttime <- substr(form2_main$Starttime, 5, 24)
-form2_main$Startdate <- as.Date(form2_main$Starttime, "%b %d %Y %H:%M:%S")
-form2_main$Endtime <- substr(form2_main$Endtime, 5, 24)
-form2_main$Enddate <- as.Date(form2_main$Endtime, "%b %d %Y %H:%M:%S")
+form2_main$SubmissionDate <- as.Date(form2_main$SubmissionDate, origin = "1899-12-30")
+form2_main <- form2_main %>% mutate(
+  Starttime = substr(Starttime, 5, 24),
+  Endtime = substr(Endtime, 5, 24),
+  Startdate =  as.Date(Starttime, "%b %d %Y %H:%M:%S"),
+  Enddate = as.Date(Endtime, "%b %d %Y %H:%M:%S"),
+  .after = Endtime )
 
 
 # Label Data --------------------------------------------------------------
@@ -213,8 +222,6 @@ form2_HH_Not_found_One_One <- labeler(data = form2_HH_Not_found_One_One,
                                       tool = path_form2_cto_tool,
                                       survey_label = "label:English",
                                       choice_lable = "label")
-
-
 
 # Merge with QA Log and Reported Log --------------------------------------
 
@@ -416,15 +423,7 @@ form2_list_filtered <- list(
   HH_Not_found_One_One = form2_HH_Not_found_One_One_filtered
 )
 
-
-
 write.xlsx(do_list_filtered, paste0("output/week_specific/direct_observation/REACH Direct Observation Form_",today(),"_Week",week,".xlsx" ))
 write.xlsx(form1_list_filtered, paste0("output/week_specific/pre_distribution_form1/REACH PRE-DISTRIBUTION FORM 1_",today(),"_Week",week,".xlsx" ))
 write.xlsx(form2_list_filtered, paste0("output/week_specific/pre_distribution_form2/REACH PRE-DISTRIBUTION FORM 2_",today(),"_Week",week,".xlsx" ))
-
-
-
-
-
-
 
