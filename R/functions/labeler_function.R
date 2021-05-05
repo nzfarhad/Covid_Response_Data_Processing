@@ -2,8 +2,12 @@
 
 labeler <- function(data, tool, survey_label = "label:English", choice_lable = "label:English"){
 
-  survey_questions <- read_excel(tool,1)
-  survey_choices <- read_excel(tool,2)
+  survey_questions <- read_excel(tool, "survey")
+  survey_choices <- read_excel(tool,"choices")
+  
+  if("value" %in% names(survey_choices)){
+    names(survey_choices)[names(survey_choices) == "value"] <- "name"
+  }
   
   # Prep Survey Questions
   survey_questions <- survey_questions[grepl("\\bselect_", survey_questions$type),]
