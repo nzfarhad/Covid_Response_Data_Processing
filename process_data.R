@@ -289,9 +289,9 @@ form2_main <- form2_main %>% left_join(select(form2_reported_data , KEY, weekly_
 
 # Apply cleaning Log ------------------------------------------------------
 
-do_main_cleaning_log <- read_excel("input/cleaning_log/DO_Cleaning_Log.xlsx")
-form1_main_cleaning_log <- read_excel("input/cleaning_log/From1_Cleaning_Log.xlsx")
-form2_main_cleaning_log <- read_excel("input/cleaning_log/From2_Cleaning_Log.xlsx")
+do_main_cleaning_log <- read_sheet(cleaned_link, sheet = "DO_log")
+form1_main_cleaning_log <- read_sheet(cleaned_link, sheet = "Form1_log")
+form2_main_cleaning_log <- read_sheet(cleaned_link, sheet = "Form2_log")
 
 
 for (rowi in 1:nrow(do_main_cleaning_log)){
@@ -369,7 +369,7 @@ write.xlsx(form1_list, paste0("output/proccessed_raw_data/latest_data/REACH PRE-
 write.xlsx(form2_list, paste0("output/proccessed_raw_data/latest_data/REACH PRE-DISTRIBUTION FORM 2.xlsx" ))
 
 # Week Specific Data ------------------------------------------------------
-week = 12
+week = 15
 
 # Direct Observation
 do_main_filtered <- do_main %>% filter(Distributed_Covid19_Relief != "Nothing [end of questionnaire – surveyor to call head office]" & Status == "Approved" & weekly_reporting_round %in% week)
