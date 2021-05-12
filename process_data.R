@@ -5,8 +5,7 @@ library(stringr)
 library(googlesheets4)
 library(openxlsx)
 source("R/functions/labeler_function.R")
-
-
+source("R/functions/cleaning_aggregation_functions.R")
 # Import Data -------------------------------------------------------------
 
 ### Direct Observation
@@ -19,15 +18,53 @@ do_Photos_Defects_rep <- read_excel(path_do, sheet = "Photos_Defects_rep") %>% s
 do_Photo_Hand_Washing <- read_excel(path_do, sheet = "Photo_Hand_Washing") %>% select(-Surveyor_Name_Hand_Washing)
 do_cases_brought_surveyors <- read_excel(path_do, sheet = "cases_brought_surveyors") %>% select(-Surveyor_Name_Cases_Brough_Surveyours)
 do_Hh_Headed_Woman_interview <- read_excel(path_do, sheet = "Hh_Headed_Woman_interview") %>% select(-Surveyor_Name_Headed_Woman)
-do_From1photo <- read_excel(path_do, sheet = "From1photo") %>% select(-Surveyor_Name_Form_1)
+do_From1photo <- read_excel(path_do, sheet = "From1photo", col_types = "text") %>% select(-Surveyor_Name_Form_1)
+# Typecast Data_Clerk Cols and handle strings in numeric var
+do_From1photo <- do_From1photo %>% mutate(
+  Picture_Clear_Form_1_N        = suppressWarnings(type_cast(Picture_Clear_Form_1_N)),
+  Picture_Clear_Form_1_No_Why_N = suppressWarnings(type_cast(Picture_Clear_Form_1_No_Why_N)),
+  Form1_Female_Headed_N         = suppressWarnings(type_cast(Form1_Female_Headed_N)),
+  Form1_A_Disability_N          = suppressWarnings(type_cast(Form1_A_Disability_N)),
+  Form1_65_And_Above_N          = suppressWarnings(type_cast(Form1_65_And_Above_N)),
+  Hh_Entered_Under_Details_Not_Shown_Above_CCAP_N = suppressWarnings(type_cast(Hh_Entered_Under_Details_Not_Shown_Above_CCAP_N)),
+  New_Idp_Hh_N                  = suppressWarnings(type_cast(New_Idp_Hh_N)),
+  New_Returnee_Hh_N             = suppressWarnings(type_cast(New_Returnee_Hh_N)),
+  Economic_Migrants_Hh_N        = suppressWarnings(type_cast(Economic_Migrants_Hh_N)),
+  New_Kuchis_Hh_N               = suppressWarnings(type_cast(New_Kuchis_Hh_N)),
+  Covid1_Migrant_Hh_N           = suppressWarnings(type_cast(Covid1_Migrant_Hh_N)),
+)
 
 do_from2phto <- read_excel(path_do, sheet = "from2phto") %>% select(-Surveyor_Name_Form_2)
 do_form3photo <- read_excel(path_do, sheet = "form3photo") %>% select(-Surveyor_Name_Form_3)
 do_form4aphoto <- read_excel(path_do, sheet = "form4aphoto") %>% select(-Surveyor_Name_Form_4a)
-do_form4bphoto <- read_excel(path_do, sheet = "form4bphoto") %>% select(-Surveyor_Name_Form_4b)
-do_from5photo <- read_excel(path_do, sheet = "from5photo") %>% select(-Surveyor_Name_Form_5)
+do_form4bphoto <- read_excel(path_do, sheet = "form4bphoto" ,col_types = "text") %>% select(-Surveyor_Name_Form_4b)
+# Typecast Data_Clerk Cols and handle strings in numeric var
+do_form4bphoto <- do_form4bphoto %>% mutate(
+  Picture_Clear_Of_The_Entire_Form_4B_N = suppressWarnings(type_cast(Picture_Clear_Of_The_Entire_Form_4B_N)),
+  Picture_Clear_Of_4B_No_Why_N = suppressWarnings(type_cast(Picture_Clear_Of_4B_No_Why_N)),
+  Rice_Kg_Per_Hh_Form_4B_N = suppressWarnings(type_cast(Rice_Kg_Per_Hh_Form_4B_N)),
+  Flour_Kg_Per_Hh_Form_4B_N = suppressWarnings(type_cast(Flour_Kg_Per_Hh_Form_4B_N)),
+  Quantity_Oil_Per_Hh_Form_4B_N = suppressWarnings(type_cast(Quantity_Oil_Per_Hh_Form_4B_N)),
+  Beans_Kg_Per_Hh_Form_4B_N = suppressWarnings(type_cast(Beans_Kg_Per_Hh_Form_4B_N)),
+  Kg_Hh_Per_Hh_Form_4B_N = suppressWarnings(type_cast(Kg_Hh_Per_Hh_Form_4B_N)),
+  Soap_Pieces_Per_Hh_Form_4B_N = suppressWarnings(type_cast(Soap_Pieces_Per_Hh_Form_4B_N)),
+)
 
-
+do_from5photo <- read_excel(path_do, sheet = "from5photo", col_types = "text") %>% select(-Surveyor_Name_Form_5)
+# Typecast Data_Clerk Cols and handle strings in numeric var
+do_from5photo <- do_from5photo %>% mutate(
+  Picture_Clear_Copy_Form_5A_Or_5B_N = suppressWarnings(type_cast(Picture_Clear_Copy_Form_5A_Or_5B_N)),
+  Picture_Clear_Copy_Form_5A_Or_5B_No_Why_N = suppressWarnings(type_cast(Picture_Clear_Copy_Form_5A_Or_5B_No_Why_N)),
+  Rice_Kg_Per_Hh_Form_5_N = suppressWarnings(type_cast(Rice_Kg_Per_Hh_Form_5_N)),
+  Flour_Kg_Per_Hh_Form_5_N = suppressWarnings(type_cast(Flour_Kg_Per_Hh_Form_5_N)),
+  Quantity_Oil_Litres_Per_Hh_Form_5_N = suppressWarnings(type_cast(Quantity_Oil_Litres_Per_Hh_Form_5_N)),
+  Beans_Kg_Per_Hh_Form_5_N = suppressWarnings(type_cast(Beans_Kg_Per_Hh_Form_5_N)),
+  Kg_Per_Hh_Per_Form_5_N = suppressWarnings(type_cast(Kg_Per_Hh_Per_Form_5_N)),
+  Soap_Bar_Per_Hh_Per_Form_5_N = suppressWarnings(type_cast(Soap_Bar_Per_Hh_Per_Form_5_N)),
+  Money_Per_HH_Per_Form_5_N = suppressWarnings(type_cast(Money_Per_HH_Per_Form_5_N)),
+  Other_Amount_Integer_Per_Form_5_N = suppressWarnings(type_cast(Other_Amount_Integer_Per_Form_5_N)),
+)
+  
 ### Remove Extra columns / anonymize
 # D0 Main
 do_main_extra_cols <- c(
@@ -369,7 +406,7 @@ write.xlsx(form1_list, paste0("output/proccessed_raw_data/latest_data/REACH PRE-
 write.xlsx(form2_list, paste0("output/proccessed_raw_data/latest_data/REACH PRE-DISTRIBUTION FORM 2.xlsx" ))
 
 # Week Specific Data ------------------------------------------------------
-week = 15
+week = 16
 
 # Direct Observation
 do_main_filtered <- do_main %>% filter(Distributed_Covid19_Relief != "Nothing [end of questionnaire – surveyor to call head office]" & Status == "Approved" & weekly_reporting_round %in% week)
@@ -422,6 +459,8 @@ form2_list_filtered <- list(
   HH_Not_found = form2_HH_Not_found_filtered,
   HH_Not_found_One_One = form2_HH_Not_found_One_One_filtered
 )
+
+
 
 write.xlsx(do_list_filtered, paste0("output/week_specific/direct_observation/REACH Direct Observation Form_",today(),"_Week",week,".xlsx" ))
 write.xlsx(form1_list_filtered, paste0("output/week_specific/pre_distribution_form1/REACH PRE-DISTRIBUTION FORM 1_",today(),"_Week",week,".xlsx" ))
