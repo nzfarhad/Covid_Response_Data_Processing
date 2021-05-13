@@ -178,6 +178,8 @@ form2_main <- form2_main %>% mutate(
 
 # Clean, aggregate and merge Data_Clerk entries ---------------------------
 
+### Direct Observation
+
 ### Direct Observation form1photo repeatsheet
 # Typecast Data_Clerk Cols and handle strings in numeric var
 do_From1photo <- do_From1photo %>% mutate_at(vars(ends_with("_N")), type_cast)
@@ -226,20 +228,105 @@ do_form4bphoto <- do_form4bphoto %>% mutate_at(vars(ends_with("_N")), type_cast)
 # Aggregate repeat sheet Data_Clerk cols 
 do_form4bphoto_agg <- do_form4bphoto %>% group_by(PARENT_KEY) %>% 
   summarise(
-    Picture_Clear_Of_The_Entire_Form_4B_N = Mode(Picture_Clear_Of_The_Entire_Form_4B_N),
-    Picture_Clear_Of_4B_No_Why_N          = Mode(Picture_Clear_Of_4B_No_Why_N),
-    Rice_Kg_Per_Hh_Form_4B_N              = min(Rice_Kg_Per_Hh_Form_4B_N, na.rm = T),
-    Flour_Kg_Per_Hh_Form_4B_N             = min(Flour_Kg_Per_Hh_Form_4B_N, na.rm = T),
-    Quantity_Oil_Per_Hh_Form_4B_N         = min(Quantity_Oil_Per_Hh_Form_4B_N, na.rm = T),
-    Beans_Kg_Per_Hh_Form_4B_N             = min(Beans_Kg_Per_Hh_Form_4B_N, na.rm = T),
-    Kg_Hh_Per_Hh_Form_4B_N                = min(Kg_Hh_Per_Hh_Form_4B_N, na.rm = T),
-    Soap_Pieces_Per_Hh_Form_4B_N          = min(Soap_Pieces_Per_Hh_Form_4B_N, na.rm = T),
+    Picture_Clear_Of_The_Entire_Form_4B = Mode(Picture_Clear_Of_The_Entire_Form_4B_N),
+    Picture_Clear_Of_4B_No_Why          = Mode(Picture_Clear_Of_4B_No_Why_N),
+    Rice_Kg_Per_Hh_Form_4B              = min(Rice_Kg_Per_Hh_Form_4B_N, na.rm = T),
+    Flour_Kg_Per_Hh_Form_4B             = min(Flour_Kg_Per_Hh_Form_4B_N, na.rm = T),
+    Quantity_Oil_Per_Hh_Form_4B         = min(Quantity_Oil_Per_Hh_Form_4B_N, na.rm = T),
+    Beans_Kg_Per_Hh_Form_4B             = min(Beans_Kg_Per_Hh_Form_4B_N, na.rm = T),
+    Kg_Hh_Per_Hh_Form_4B                = min(Kg_Hh_Per_Hh_Form_4B_N, na.rm = T),
+    Soap_Pieces_Per_Hh_Form_4B          = min(Soap_Pieces_Per_Hh_Form_4B_N, na.rm = T),
     
   ) %>% suppressWarnings() %>% mutate_if(is.numeric, list(~na_if(.,Inf))) 
 
 # Convert Aggregated data to cleaning log
 do_form4bphoto_log <- do_form4bphoto_agg %>% 
-  pivot_longer(cols = Picture_Clear_Of_The_Entire_Form_4B_N:Soap_Pieces_Per_Hh_Form_4B_N,
+  pivot_longer(cols = Picture_Clear_Of_The_Entire_Form_4B:Soap_Pieces_Per_Hh_Form_4B,
+               names_to = "question",
+               values_to = "new_value") %>% mutate(
+                 old_value = NA_character_,
+                 new_value = as.character(new_value)
+               ) %>% select(question, old_value, new_value, uuid = PARENT_KEY ) %>% 
+  filter(!is.na(new_value))
+
+# Bring Values to main sheet
+for (rowi in 1:nrow(do_form4bphoto_log)){
+  uuid_i <- do_form4bphoto_log$uuid[rowi]
+  var_i <- do_form4bphoto_log$question[rowi]
+  old_i <- do_form4bphoto_log$old_value[rowi]
+  new_i <- do_form4bphoto_log$new_value[rowi]
+  print(paste("uuid", uuid_i, "Old value: ", old_i, "changed to", new_i, "for", var_i))
+  # Find the variable according to the row of the cleaning log
+  do_main[do_main$KEY == uuid_i, var_i] <- new_i
+}
+
+### Direct Observation from5photo repeatsheet
+# Typecast Data_Clerk Cols and handle strings in numeric var
+do_from5photo <- do_from5photo %>% mutate_at(vars(ends_with("_N")), type_cast)
+
+# Aggregate repeat sheet Data_Clerk cols 
+do_from5photo_agg <- do_from5photo %>% group_by(PARENT_KEY) %>% 
+  summarise(
+    Picture_Clear_Copy_Form_5A_Or_5B        = Mode(Picture_Clear_Copy_Form_5A_Or_5B_N),
+    Picture_Clear_Copy_Form_5A_Or_5B_No_Why = Mode(Picture_Clear_Copy_Form_5A_Or_5B_No_Why_N),
+    Rice_Kg_Per_Hh_Form_5                   = min(Rice_Kg_Per_Hh_Form_5_N, na.rm = T),
+    Flour_Kg_Per_Hh_Form_5                  = min(Flour_Kg_Per_Hh_Form_5_N, na.rm = T),
+    Quantity_Oil_Litres_Per_Hh_Form_5       = min(Quantity_Oil_Litres_Per_Hh_Form_5_N, na.rm = T),
+    Beans_Kg_Per_Hh_Form_5                  = min(Beans_Kg_Per_Hh_Form_5_N, na.rm = T),
+    Kg_Per_Hh_Per_Form_5                    = min(Kg_Per_Hh_Per_Form_5_N, na.rm = T),
+    Soap_Bar_Per_Hh_Per_Form_5              = min(Soap_Bar_Per_Hh_Per_Form_5_N, na.rm = T),
+    Money_Per_HH_Per_Form_5                 = min(Money_Per_HH_Per_Form_5_N, na.rm = T),
+    Other_Amount_Integer_Per_Form_5         = min(Other_Amount_Integer_Per_Form_5_N, na.rm = T)
+  )  %>% suppressWarnings() %>% mutate_if(is.numeric, list(~na_if(.,Inf))) 
+
+# Convert Aggregated data to cleaning log
+do_from5photo_log <- do_from5photo_agg %>% 
+  pivot_longer(cols = Picture_Clear_Copy_Form_5A_Or_5B:Other_Amount_Integer_Per_Form_5,
+               names_to = "question",
+               values_to = "new_value") %>% mutate(
+                 old_value = NA_character_,
+                 new_value = as.character(new_value)
+               ) %>% select(question, old_value, new_value, uuid = PARENT_KEY ) %>% 
+  filter(!is.na(new_value))
+
+# Bring Values to main sheet
+for (rowi in 1:nrow(do_from5photo_log)){
+  uuid_i <- do_from5photo_log$uuid[rowi]
+  var_i <- do_from5photo_log$question[rowi]
+  old_i <- do_from5photo_log$old_value[rowi]
+  new_i <- do_from5photo_log$new_value[rowi]
+  print(paste("uuid", uuid_i, "Old value: ", old_i, "changed to", new_i, "for", var_i))
+  # Find the variable according to the row of the cleaning log
+  do_main[do_main$KEY == uuid_i, var_i] <- new_i
+}
+
+# Pre-distribution form1
+
+# Typecast Data_Clerk Cols and handle strings in numeric var
+form1_beneficiary_list_photos <- form1_beneficiary_list_photos %>% mutate_at(vars(ends_with("_N")), type_cast)
+
+# Aggregate repeat sheet Data_Clerk cols 
+form1_beneficiary_list_photos_agg <- form1_beneficiary_list_photos %>% group_by(PARENT_KEY) %>% 
+  summarise(
+    Is_The_Picture_A_Clear_Copy_Of_The_Entire_Form    = Mode(Is_The_Picture_A_Clear_Copy_Of_The_Entire_Form_N),
+    Reasons_For_Why_The_Copy_Of_The_Form_Is_Not_Clear = Mode(`_Reasons_For_Why_The_Copy_Of_The_Form_Is_Not_Clear_N`),
+    Number_eligible_HH_form1                         = custom_sum(Number_eligible_HH_form1_N),
+    Number_ineligible_HH_form1                        = custom_sum(Number_ineligible_HH_form1_N),
+    Number_Of_Female_Headed_Household                 = custom_sum(Number_Of_Female_Headed_Household_N),
+    Number_Of_HH_Headed_By_A_Person_With_A_Disability = custom_sum(Number_Of_HH_Headed_By_A_Person_With_A_Disability_N),
+    Number_Of_HH_Headed_By_Elderly                    = custom_sum(Number_Of_HH_Headed_By_Elderly_N),
+    Number_Of_HH_Entered_Under_Details_To_Be_Added_For_HHs_Not_Shown_Above_From_The_Time_Of_Ccap_Mobilization_Of_This_Community = custom_sum(Number_Of_HH_Entered_Under_Details_To_Be_Added_For_HHs_Not_Shown_Above_From_The_Time_Of_Ccap_Mobilization_Of_This_Community_N),
+    New_Idp_HH            = custom_sum(New_Idp_HH_N),
+    New_Returnee_HH      = custom_sum(New_Returnee_HH_N),
+    Economic_Migrants_HH = custom_sum(Economic_Migrants_HH_N),
+    New_Kuchis_HH        = custom_sum(New_Kuchis_HH_N),
+    Covid_19_Migrant_HH  = custom_sum(Covid_19_Migrant_HH_N),
+    
+  ) 
+
+# Convert Aggregated data to cleaning log
+form1_beneficiary_list_photos_log <- form1_beneficiary_list_photos_agg %>% 
+  pivot_longer(cols = Is_The_Picture_A_Clear_Copy_Of_The_Entire_Form:Covid_19_Migrant_HH,
                names_to = "question",
                values_to = "new_value") %>% mutate(
                  old_value = NA_character_,
@@ -248,10 +335,17 @@ do_form4bphoto_log <- do_form4bphoto_agg %>%
   filter(!is.na(new_value))
 
 
+# Bring Values to main sheet
+for (rowi in 1:nrow(form1_beneficiary_list_photos_log)){
+  uuid_i <- form1_beneficiary_list_photos_log$uuid[rowi]
+  var_i <- form1_beneficiary_list_photos_log$question[rowi]
+  old_i <- form1_beneficiary_list_photos_log$old_value[rowi]
+  new_i <- form1_beneficiary_list_photos_log$new_value[rowi]
+  print(paste("uuid", uuid_i, "Old value: ", old_i, "changed to", new_i, "for", var_i))
+  # Find the variable according to the row of the cleaning log
+  form1_main[form1_main$KEY == uuid_i, var_i] <- new_i
+}
 
-### Direct Observation from5photo repeatsheet
-# Typecast Data_Clerk Cols and handle strings in numeric var
-do_from5photo <- do_from5photo %>% mutate_at(vars(ends_with("_N")), type_cast)
 
 
 # Label Data --------------------------------------------------------------
