@@ -1,5 +1,6 @@
 library(readxl)
 library(dplyr)
+library(tidyr)
 library(lubridate)
 library(stringr)
 library(googlesheets4)
@@ -13,58 +14,18 @@ path_do <- "input/data_downlaods/latest_data/REACH Direct Observation Form.xlsx"
 path_do_cto_tool <- "input/cto_tool/DO.xlsx"
 excel_sheets(path_do)
 
-do_main <- read_excel(path_do, sheet = "data")
-do_Photos_Defects_rep <- read_excel(path_do, sheet = "Photos_Defects_rep") %>% select(-Surveyor_Name_Defects_Witness)
-do_Photo_Hand_Washing <- read_excel(path_do, sheet = "Photo_Hand_Washing") %>% select(-Surveyor_Name_Hand_Washing)
-do_cases_brought_surveyors <- read_excel(path_do, sheet = "cases_brought_surveyors") %>% select(-Surveyor_Name_Cases_Brough_Surveyours)
-do_Hh_Headed_Woman_interview <- read_excel(path_do, sheet = "Hh_Headed_Woman_interview") %>% select(-Surveyor_Name_Headed_Woman)
+do_main <- read_excel(path_do, sheet = "data", guess_max = 100000)
+do_Photos_Defects_rep <- read_excel(path_do, sheet = "Photos_Defects_rep", guess_max = 100000) %>% select(-Surveyor_Name_Defects_Witness)
+do_Photo_Hand_Washing <- read_excel(path_do, sheet = "Photo_Hand_Washing" , guess_max = 100000 ) %>% select(-Surveyor_Name_Hand_Washing)
+do_cases_brought_surveyors <- read_excel(path_do, sheet = "cases_brought_surveyors" , guess_max = 100000) %>% select(-Surveyor_Name_Cases_Brough_Surveyours)
+do_Hh_Headed_Woman_interview <- read_excel(path_do, sheet = "Hh_Headed_Woman_interview" , guess_max = 100000) %>% select(-Surveyor_Name_Headed_Woman)
 do_From1photo <- read_excel(path_do, sheet = "From1photo", col_types = "text") %>% select(-Surveyor_Name_Form_1)
-# Typecast Data_Clerk Cols and handle strings in numeric var
-do_From1photo <- do_From1photo %>% mutate(
-  Picture_Clear_Form_1_N        = suppressWarnings(type_cast(Picture_Clear_Form_1_N)),
-  Picture_Clear_Form_1_No_Why_N = suppressWarnings(type_cast(Picture_Clear_Form_1_No_Why_N)),
-  Form1_Female_Headed_N         = suppressWarnings(type_cast(Form1_Female_Headed_N)),
-  Form1_A_Disability_N          = suppressWarnings(type_cast(Form1_A_Disability_N)),
-  Form1_65_And_Above_N          = suppressWarnings(type_cast(Form1_65_And_Above_N)),
-  Hh_Entered_Under_Details_Not_Shown_Above_CCAP_N = suppressWarnings(type_cast(Hh_Entered_Under_Details_Not_Shown_Above_CCAP_N)),
-  New_Idp_Hh_N                  = suppressWarnings(type_cast(New_Idp_Hh_N)),
-  New_Returnee_Hh_N             = suppressWarnings(type_cast(New_Returnee_Hh_N)),
-  Economic_Migrants_Hh_N        = suppressWarnings(type_cast(Economic_Migrants_Hh_N)),
-  New_Kuchis_Hh_N               = suppressWarnings(type_cast(New_Kuchis_Hh_N)),
-  Covid1_Migrant_Hh_N           = suppressWarnings(type_cast(Covid1_Migrant_Hh_N)),
-)
-
-do_from2phto <- read_excel(path_do, sheet = "from2phto") %>% select(-Surveyor_Name_Form_2)
-do_form3photo <- read_excel(path_do, sheet = "form3photo") %>% select(-Surveyor_Name_Form_3)
-do_form4aphoto <- read_excel(path_do, sheet = "form4aphoto") %>% select(-Surveyor_Name_Form_4a)
+do_from2phto <- read_excel(path_do, sheet = "from2phto" , guess_max = 100000) %>% select(-Surveyor_Name_Form_2)
+do_form3photo <- read_excel(path_do, sheet = "form3photo" , guess_max = 100000) %>% select(-Surveyor_Name_Form_3)
+do_form4aphoto <- read_excel(path_do, sheet = "form4aphoto" , guess_max = 100000) %>% select(-Surveyor_Name_Form_4a)
 do_form4bphoto <- read_excel(path_do, sheet = "form4bphoto" ,col_types = "text") %>% select(-Surveyor_Name_Form_4b)
-# Typecast Data_Clerk Cols and handle strings in numeric var
-do_form4bphoto <- do_form4bphoto %>% mutate(
-  Picture_Clear_Of_The_Entire_Form_4B_N = suppressWarnings(type_cast(Picture_Clear_Of_The_Entire_Form_4B_N)),
-  Picture_Clear_Of_4B_No_Why_N = suppressWarnings(type_cast(Picture_Clear_Of_4B_No_Why_N)),
-  Rice_Kg_Per_Hh_Form_4B_N = suppressWarnings(type_cast(Rice_Kg_Per_Hh_Form_4B_N)),
-  Flour_Kg_Per_Hh_Form_4B_N = suppressWarnings(type_cast(Flour_Kg_Per_Hh_Form_4B_N)),
-  Quantity_Oil_Per_Hh_Form_4B_N = suppressWarnings(type_cast(Quantity_Oil_Per_Hh_Form_4B_N)),
-  Beans_Kg_Per_Hh_Form_4B_N = suppressWarnings(type_cast(Beans_Kg_Per_Hh_Form_4B_N)),
-  Kg_Hh_Per_Hh_Form_4B_N = suppressWarnings(type_cast(Kg_Hh_Per_Hh_Form_4B_N)),
-  Soap_Pieces_Per_Hh_Form_4B_N = suppressWarnings(type_cast(Soap_Pieces_Per_Hh_Form_4B_N)),
-)
-
 do_from5photo <- read_excel(path_do, sheet = "from5photo", col_types = "text") %>% select(-Surveyor_Name_Form_5)
-# Typecast Data_Clerk Cols and handle strings in numeric var
-do_from5photo <- do_from5photo %>% mutate(
-  Picture_Clear_Copy_Form_5A_Or_5B_N = suppressWarnings(type_cast(Picture_Clear_Copy_Form_5A_Or_5B_N)),
-  Picture_Clear_Copy_Form_5A_Or_5B_No_Why_N = suppressWarnings(type_cast(Picture_Clear_Copy_Form_5A_Or_5B_No_Why_N)),
-  Rice_Kg_Per_Hh_Form_5_N = suppressWarnings(type_cast(Rice_Kg_Per_Hh_Form_5_N)),
-  Flour_Kg_Per_Hh_Form_5_N = suppressWarnings(type_cast(Flour_Kg_Per_Hh_Form_5_N)),
-  Quantity_Oil_Litres_Per_Hh_Form_5_N = suppressWarnings(type_cast(Quantity_Oil_Litres_Per_Hh_Form_5_N)),
-  Beans_Kg_Per_Hh_Form_5_N = suppressWarnings(type_cast(Beans_Kg_Per_Hh_Form_5_N)),
-  Kg_Per_Hh_Per_Form_5_N = suppressWarnings(type_cast(Kg_Per_Hh_Per_Form_5_N)),
-  Soap_Bar_Per_Hh_Per_Form_5_N = suppressWarnings(type_cast(Soap_Bar_Per_Hh_Per_Form_5_N)),
-  Money_Per_HH_Per_Form_5_N = suppressWarnings(type_cast(Money_Per_HH_Per_Form_5_N)),
-  Other_Amount_Integer_Per_Form_5_N = suppressWarnings(type_cast(Other_Amount_Integer_Per_Form_5_N)),
-)
-  
+
 ### Remove Extra columns / anonymize
 # D0 Main
 do_main_extra_cols <- c(
@@ -108,8 +69,8 @@ do_main <- do_main %>% mutate(
 path_form1 <- "input/data_downlaods/latest_data/REACH PRE-DISTRIBUTION FORM 1.xlsx"
 path_form1_cto_tool <- "input/cto_tool/Form1.xlsx"
 excel_sheets(path_form1)
-form1_main <- read_excel(path_form1, sheet = "data")
-form1_beneficiary_list_photos <- read_excel(path_form1, sheet = "beneficiary_list_photos") %>% select(-Surveyor_Name_List_Photo)
+form1_main <- read_excel(path_form1, sheet = "data" , guess_max = 100000)
+form1_beneficiary_list_photos <- read_excel(path_form1, sheet = "beneficiary_list_photos" , guess_max = 100000) %>% select(-Surveyor_Name_List_Photo)
 
 ### Remove Extra columns / anonymize
 
@@ -164,10 +125,10 @@ form1_main <- form1_main %>% mutate(
 path_form2 <- "input/data_downlaods/latest_data/REACH PRE-DISTRIBUTION FORM 2.xlsx"
 path_form2_cto_tool <- "input/cto_tool/Form2.xlsx"
 excel_sheets(path_form2)
-form2_main <- read_excel(path_form2, sheet = "data")
-form2_Benificiary_Door_To_Door <- read_excel(path_form2, sheet = "Benificiary_Door_To_Door") %>% select(-c(Surveyor_Name_HH_Door_To_Door, Head_Of_Household_Name, Line_Number___Serial_Number_Of_RespondentS_Name_On_The_List,Contact_Number, What_Is_The_Serial_Number_Of_This_Other_Person_On_The_List_From_Right_Side_Column_On_Form_1, What_Is_The_Name_Of_The_Other_Person ))
-form2_HH_Not_found <- read_excel(path_form2, sheet = "HH_Not_found") %>% select(-c(Surveyor_Name_HH_Not_Found, Name_Of_Respondent, Phone_Number_Of_Respondent, )) 
-form2_HH_Not_found_One_One <- read_excel(path_form2, sheet = "HH_Not_found_One_One") %>% select(-c(Name_Of_Person_Not_Found, Serial_Number_Person_Not_Found, ))
+form2_main <- read_excel(path_form2, sheet = "data" , guess_max = 100000)
+form2_Benificiary_Door_To_Door <- read_excel(path_form2, sheet = "Benificiary_Door_To_Door" , guess_max = 100000) %>% select(-c(Surveyor_Name_HH_Door_To_Door, Head_Of_Household_Name, Line_Number___Serial_Number_Of_RespondentS_Name_On_The_List,Contact_Number, What_Is_The_Serial_Number_Of_This_Other_Person_On_The_List_From_Right_Side_Column_On_Form_1, What_Is_The_Name_Of_The_Other_Person ))
+form2_HH_Not_found <- read_excel(path_form2, sheet = "HH_Not_found" , guess_max = 100000) %>% select(-c(Surveyor_Name_HH_Not_Found, Name_Of_Respondent, Phone_Number_Of_Respondent, )) 
+form2_HH_Not_found_One_One <- read_excel(path_form2, sheet = "HH_Not_found_One_One" , guess_max = 100000) %>% select(-c(Name_Of_Person_Not_Found, Serial_Number_Person_Not_Found, ))
 form2_HH_Not_found_One_One$PARENT_KEY <- gsub("/.*","",form2_HH_Not_found_One_One$PARENT_KEY)
 
 ### Remove Extra columns / anonymize
@@ -213,6 +174,84 @@ form2_main <- form2_main %>% mutate(
   Startdate =  as.Date(Starttime, "%b %d %Y %H:%M:%S"),
   Enddate = as.Date(Endtime, "%b %d %Y %H:%M:%S"),
   .after = Endtime )
+
+
+# Clean, aggregate and merge Data_Clerk entries ---------------------------
+
+### Direct Observation form1photo repeatsheet
+# Typecast Data_Clerk Cols and handle strings in numeric var
+do_From1photo <- do_From1photo %>% mutate_at(vars(ends_with("_N")), type_cast)
+
+# Aggregate repeat sheet Data_Clerk cols 
+do_From1photo_agg <- do_From1photo %>% group_by(PARENT_KEY) %>% 
+  summarise(
+    Picture_Clear_Form_1 = Mode(Picture_Clear_Form_1_N),
+    Picture_Clear_Form_1_No_Why = Mode(Picture_Clear_Form_1_No_Why_N),
+    Form1_Female_Headed = custom_sum(Form1_Female_Headed_N),
+    Form1_A_Disability = custom_sum(Form1_A_Disability_N),
+    Form1_65_And_Above = custom_sum(Form1_65_And_Above_N),
+    New_Idp_Hh = custom_sum(New_Idp_Hh_N),
+    New_Returnee_Hh = custom_sum(New_Returnee_Hh_N),
+    Economic_Migrants_Hh = custom_sum(Economic_Migrants_Hh_N),
+    New_Kuchis_Hh = custom_sum(New_Kuchis_Hh_N),
+    Covid1_Migrant_Hh = custom_sum(Covid1_Migrant_Hh_N),
+  )
+
+# Convert Aggregated data to cleaning log
+do_From1photo_log <- do_From1photo_agg %>% 
+  pivot_longer(cols = Form1_Female_Headed:Covid1_Migrant_Hh,
+               names_to = "question",
+               values_to = "new_value") %>% mutate(
+                 old_value = NA_character_,
+                 new_value = as.character(new_value)
+               ) %>% select(question, old_value, new_value, uuid = PARENT_KEY ) %>% 
+  filter(!is.na(new_value))
+
+
+# Bring Values to main sheet
+for (rowi in 1:nrow(do_From1photo_log)){
+  uuid_i <- do_From1photo_log$uuid[rowi]
+  var_i <- do_From1photo_log$question[rowi]
+  old_i <- do_From1photo_log$old_value[rowi]
+  new_i <- do_From1photo_log$new_value[rowi]
+  print(paste("uuid", uuid_i, "Old value: ", old_i, "changed to", new_i, "for", var_i))
+  # Find the variable according to the row of the cleaning log
+  do_main[do_main$KEY == uuid_i, var_i] <- new_i
+}
+
+### Direct Observation form4bphoto repeatsheet
+# Typecast Data_Clerk Cols and handle strings in numeric var
+do_form4bphoto <- do_form4bphoto %>% mutate_at(vars(ends_with("_N")), type_cast)
+
+# Aggregate repeat sheet Data_Clerk cols 
+do_form4bphoto_agg <- do_form4bphoto %>% group_by(PARENT_KEY) %>% 
+  summarise(
+    Picture_Clear_Of_The_Entire_Form_4B_N = Mode(Picture_Clear_Of_The_Entire_Form_4B_N),
+    Picture_Clear_Of_4B_No_Why_N          = Mode(Picture_Clear_Of_4B_No_Why_N),
+    Rice_Kg_Per_Hh_Form_4B_N              = min(Rice_Kg_Per_Hh_Form_4B_N, na.rm = T),
+    Flour_Kg_Per_Hh_Form_4B_N             = min(Flour_Kg_Per_Hh_Form_4B_N, na.rm = T),
+    Quantity_Oil_Per_Hh_Form_4B_N         = min(Quantity_Oil_Per_Hh_Form_4B_N, na.rm = T),
+    Beans_Kg_Per_Hh_Form_4B_N             = min(Beans_Kg_Per_Hh_Form_4B_N, na.rm = T),
+    Kg_Hh_Per_Hh_Form_4B_N                = min(Kg_Hh_Per_Hh_Form_4B_N, na.rm = T),
+    Soap_Pieces_Per_Hh_Form_4B_N          = min(Soap_Pieces_Per_Hh_Form_4B_N, na.rm = T),
+    
+  ) %>% suppressWarnings() %>% mutate_if(is.numeric, list(~na_if(.,Inf))) 
+
+# Convert Aggregated data to cleaning log
+do_form4bphoto_log <- do_form4bphoto_agg %>% 
+  pivot_longer(cols = Picture_Clear_Of_The_Entire_Form_4B_N:Soap_Pieces_Per_Hh_Form_4B_N,
+               names_to = "question",
+               values_to = "new_value") %>% mutate(
+                 old_value = NA_character_,
+                 new_value = as.character(new_value)
+               ) %>% select(question, old_value, new_value, uuid = PARENT_KEY ) %>% 
+  filter(!is.na(new_value))
+
+
+
+### Direct Observation from5photo repeatsheet
+# Typecast Data_Clerk Cols and handle strings in numeric var
+do_from5photo <- do_from5photo %>% mutate_at(vars(ends_with("_N")), type_cast)
 
 
 # Label Data --------------------------------------------------------------
