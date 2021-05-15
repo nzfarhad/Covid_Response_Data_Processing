@@ -539,7 +539,7 @@ write.xlsx(form1_list, paste0("output/proccessed_raw_data/latest_data/REACH PRE-
 write.xlsx(form2_list, paste0("output/proccessed_raw_data/latest_data/REACH PRE-DISTRIBUTION FORM 2.xlsx" ))
 
 # Week Specific Data ------------------------------------------------------
-week = 16
+week = 17
 
 # Direct Observation
 do_main_filtered <- do_main %>% filter(Distributed_Covid19_Relief != "Nothing [end of questionnaire – surveyor to call head office]" & Status == "Approved" & weekly_reporting_round %in% week)
