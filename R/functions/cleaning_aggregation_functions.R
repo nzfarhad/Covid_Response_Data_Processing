@@ -25,3 +25,47 @@ custom_sum <- function(x){
   }
 }
 
+
+fix_attachments <- function(df, server) {
+  col_index <- grepl("File skipped from exports", df)
+  col_names <- df %>% 
+    select(which(col_index)) %>% 
+    colnames()
+  server_name <- paste0(server, ".surveycto.com/view/submission-attachment/")
+  
+  df <- df %>% 
+    mutate(across(col_names,
+                  function(x)
+                    x = case_when(
+                      !is.na(x) ~ paste0(server_name,
+                                         str_remove(x, "File skipped from exports: "),
+                                         "?uuid=uuid%3A",
+                                         str_remove(str_remove(substr(KEY, 1, 41), "uuid:"), "uuid:")
+                      ),
+                      TRUE ~ x
+                    )
+    ))
+  
+  return(df)
+}
+
+fix_attachments_col_specific <- function(df, server, vars) {
+ 
+  col_names <- vars
+  server_name <- paste0(server, ".surveycto.com/view/submission-attachment/")
+  
+  df <- df %>% 
+    mutate(across(col_names,
+                  function(x)
+                    x = case_when(
+                      !is.na(x) ~ paste0(server_name,
+                                         str_remove(x, "File skipped from exports: "),
+                                         "?uuid=uuid%3A",
+                                         str_remove(str_remove(substr(KEY, 1, 41), "uuid:"), "uuid:")
+                      ),
+                      TRUE ~ x
+                    )
+    ))
+  
+  return(df)
+}

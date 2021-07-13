@@ -7,6 +7,7 @@ library(googlesheets4)
 library(openxlsx)
 source("R/functions/labeler_function.R")
 source("R/functions/cleaning_aggregation_functions.R")
+`%notin%` <- Negate(`%in%`)
 # Import Data -------------------------------------------------------------
 
 ### Direct Observation
@@ -15,6 +16,8 @@ path_do_cto_tool <- "input/cto_tool/DO.xlsx"
 excel_sheets(path_do)
 
 do_main <- read_excel(path_do, sheet = "data", guess_max = 100000)
+
+
 do_Photos_Defects_rep <- read_excel(path_do, sheet = "Photos_Defects_rep", guess_max = 100000) %>% select(-Surveyor_Name_Defects_Witness)
 do_Photo_Hand_Washing <- read_excel(path_do, sheet = "Photo_Hand_Washing" , guess_max = 100000 ) %>% select(-Surveyor_Name_Hand_Washing)
 do_cases_brought_surveyors <- read_excel(path_do, sheet = "cases_brought_surveyors" , guess_max = 100000) %>% select(-Surveyor_Name_Cases_Brough_Surveyours)
@@ -25,6 +28,21 @@ do_form3photo <- read_excel(path_do, sheet = "form3photo" , guess_max = 100000) 
 do_form4aphoto <- read_excel(path_do, sheet = "form4aphoto" , guess_max = 100000) %>% select(-Surveyor_Name_Form_4a)
 do_form4bphoto <- read_excel(path_do, sheet = "form4bphoto" ,col_types = "text") %>% select(-Surveyor_Name_Form_4b)
 do_from5photo <- read_excel(path_do, sheet = "from5photo", col_types = "text") %>% select(-Surveyor_Name_Form_5)
+
+
+# fix media links
+do_main <- fix_attachments(df = do_main, server = "https://artftpm")
+do_Photos_Defects_rep <- fix_attachments(df = do_Photos_Defects_rep, server = "https://artftpm")
+do_Photo_Hand_Washing <- fix_attachments(df = do_Photo_Hand_Washing, server = "https://artftpm")
+do_cases_brought_surveyors <- fix_attachments(df = do_cases_brought_surveyors, server = "https://artftpm")
+do_Hh_Headed_Woman_interview <- fix_attachments(df = do_Hh_Headed_Woman_interview, server = "https://artftpm")
+do_From1photo <- fix_attachments(df = do_From1photo, server = "https://artftpm")
+do_from2phto <- fix_attachments(df = do_from2phto, server = "https://artftpm")
+do_form3photo <- fix_attachments(df = do_form3photo, server = "https://artftpm")
+do_form4aphoto <- fix_attachments(df = do_form4aphoto, server = "https://artftpm")
+do_form4bphoto <- fix_attachments(df = do_form4bphoto, server = "https://artftpm")
+do_from5photo <- fix_attachments(df = do_from5photo, server = "https://artftpm")
+
 
 ### Remove Extra columns / anonymize
 # D0 Main
@@ -72,6 +90,12 @@ excel_sheets(path_form1)
 form1_main <- read_excel(path_form1, sheet = "data" , guess_max = 100000)
 form1_beneficiary_list_photos <- read_excel(path_form1, sheet = "beneficiary_list_photos" , guess_max = 100000) %>% select(-Surveyor_Name_List_Photo)
 
+# fix media links
+form1_main <- fix_attachments(df = form1_main, server = "https://artftpm")
+form1_beneficiary_list_photos <- fix_attachments(df = form1_beneficiary_list_photos, server = "https://artftpm")
+
+
+
 ### Remove Extra columns / anonymize
 
 form1_extra_cols <- c(
@@ -85,6 +109,7 @@ form1_extra_cols <- c(
   'Geopoint1-Longitude',
   'Geopoint1-Altitude',
   'Geopoint1-Accuracy',
+  'Site_Visit_Id',
   'Surveyor_Name',
   'name_respondent',
   'phone_number_respondent',
@@ -105,7 +130,22 @@ form1_extra_cols <- c(
   'review_status',
   'review_quality',
   'review_comments',
-  'review_corrections'
+  'review_corrections',
+  'temp_label20',
+  'temp_label21',
+  'temp_label22',
+  'temp_label23',
+  'temp_label24',
+  'temp_label25',
+  'temp_label26',
+  'temp_label27',
+  'temp_label28',
+  'temp_label7',
+  'temp_label8',
+  'temp_label9',
+  'temp_label10',
+  'temp_label11',
+  'temp_label12'
 )
 
 
@@ -126,10 +166,25 @@ path_form2 <- "input/data_downlaods/latest_data/REACH PRE-DISTRIBUTION FORM 2.xl
 path_form2_cto_tool <- "input/cto_tool/Form2.xlsx"
 excel_sheets(path_form2)
 form2_main <- read_excel(path_form2, sheet = "data" , guess_max = 100000)
-form2_Benificiary_Door_To_Door <- read_excel(path_form2, sheet = "Benificiary_Door_To_Door" , guess_max = 100000) %>% select(-c(Surveyor_Name_HH_Door_To_Door, Head_Of_Household_Name, Line_Number___Serial_Number_Of_RespondentS_Name_On_The_List,Contact_Number, What_Is_The_Serial_Number_Of_This_Other_Person_On_The_List_From_Right_Side_Column_On_Form_1, What_Is_The_Name_Of_The_Other_Person ))
+form2_Benificiary_Door_To_Door <- read_excel(path_form2, sheet = "Benificiary_Door_To_Door" , guess_max = 100000)
+form2_rep_Absent_For_interview <- read_excel(path_form2, sheet = "rep_Absent_For_interview" , guess_max = 100000) %>% select(-c(Absent_Name, Absent_Tazkeera, Absent_Phone_Number))
+form2_rep_Absent_For_interview$PARENT_KEY <- gsub("/.*","",form2_rep_Absent_For_interview$PARENT_KEY)
 form2_HH_Not_found <- read_excel(path_form2, sheet = "HH_Not_found" , guess_max = 100000) %>% select(-c(Surveyor_Name_HH_Not_Found, Name_Of_Respondent, Phone_Number_Of_Respondent, )) 
 form2_HH_Not_found_One_One <- read_excel(path_form2, sheet = "HH_Not_found_One_One" , guess_max = 100000) %>% select(-c(Name_Of_Person_Not_Found, Serial_Number_Person_Not_Found, ))
 form2_HH_Not_found_One_One$PARENT_KEY <- gsub("/.*","",form2_HH_Not_found_One_One$PARENT_KEY)
+
+# fix media links
+
+form2_main <- fix_attachments(df = form2_main, server = "https://artftpm")
+form2_Benificiary_Door_To_Door <- fix_attachments_col_specific(df = form2_Benificiary_Door_To_Door, server = "https://artftpm", vars = "Other_Who_Did_You_Have_To_Pay")
+form2_rep_Absent_For_interview <- fix_attachments(df = form2_rep_Absent_For_interview, server = "https://artftpm")
+form2_HH_Not_found <- fix_attachments(df = form2_HH_Not_found, server = "https://artftpm")
+form2_HH_Not_found_One_One <- fix_attachments(df = form2_HH_Not_found_One_One, server = "https://artftpm")
+
+
+
+
+
 
 ### Remove Extra columns / anonymize
 
@@ -161,10 +216,46 @@ form2_extra_cols <- c(
   'review_status',
   'review_quality',
   'review_comments',
-  'review_corrections'
+  'review_corrections',
+  'temp_label20',
+  'temp_label21',
+  'temp_label22',
+  'temp_label23',
+  'temp_label24',
+  'temp_label25',
+  'temp_label26',
+  'temp_label27',
+  'temp_label28',
+  'temp_label10',
+  'temp_label11',
+  'temp_label12',
+  'temp_label1',
+  'temp_label2',
+  'temp_label3',
+  'temp_label4',
+  'temp_label8',
+  'temp_label9'
+  
 )
 
+
+form2_HH_extra_cols <- c(
+  'Geopoint3-Latitude',
+  'Geopoint3-Longitude',
+  'Geopoint3-Altitude',
+  'Geopoint3-Accuracy',
+  'Surveyor_Name_HH_Door_To_Door', 
+  'Head_Of_Household_Name', 
+  'Line_Number___Serial_Number_Of_RespondentS_Name_On_The_List',
+  'Contact_Number', 
+  'What_Is_The_Serial_Number_Of_This_Other_Person_On_The_List_From_Right_Side_Column_On_Form_1', 
+  'What_Is_The_Name_Of_The_Other_Person',
+  'Tazkira_number'
+)
+
+
 form2_main <- form2_main %>% select(-any_of(form2_extra_cols))
+form2_Benificiary_Door_To_Door <- form2_Benificiary_Door_To_Door %>% select(-any_of(form2_HH_extra_cols))
 
 ### Format Dates
 form2_main$SubmissionDate <- as.Date(form2_main$SubmissionDate, origin = "1899-12-30")
@@ -383,10 +474,16 @@ form2_Benificiary_Door_To_Door <- labeler(data = form2_Benificiary_Door_To_Door,
                                           survey_label = "label:English",
                                           choice_lable = "label")
 
+form2_rep_Absent_For_interview <- labeler(data = form2_rep_Absent_For_interview,
+                                          tool = path_form2_cto_tool,
+                                          survey_label = "label:English",
+                                          choice_lable = "label")
+
 form2_HH_Not_found <- labeler(data = form2_HH_Not_found,
                               tool = path_form2_cto_tool,
                               survey_label = "label:English",
                               choice_lable = "label")
+
 
 form2_HH_Not_found_One_One <- labeler(data = form2_HH_Not_found_One_One,
                                       tool = path_form2_cto_tool,
@@ -397,7 +494,7 @@ form2_HH_Not_found_One_One <- labeler(data = form2_HH_Not_found_One_One,
 
 gs4_deauth()
 qa_log <- readr::read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQhlF8-SoqkzJg6FSYLV2bn08nikuYhh9wQSm-fH36wKNYP3rQqCMh01HoNJ1tzrMehEF99lDFlG3F4/pub?gid=589852754&single=true&output=csv")
-qa_log <- qa_log %>% select(UUID, `Form Type`, `CDC ID`,Status)
+qa_log <- qa_log %>% select(UUID, `Form Type`,Status)
 
 # Direct Observation
 do_qa_log <- qa_log %>% 
@@ -525,6 +622,7 @@ form1_list <- list(
 form2_list <- list(
   data = form2_main,
   Benificiary_Door_To_Door = form2_Benificiary_Door_To_Door,
+  form2_rep_Absent_For_interview = form2_rep_Absent_For_interview,
   HH_Not_found = form2_HH_Not_found,
   HH_Not_found_One_One = form2_HH_Not_found_One_One
 )
@@ -539,10 +637,11 @@ write.xlsx(form1_list, paste0("output/proccessed_raw_data/latest_data/REACH PRE-
 write.xlsx(form2_list, paste0("output/proccessed_raw_data/latest_data/REACH PRE-DISTRIBUTION FORM 2.xlsx" ))
 
 # Week Specific Data ------------------------------------------------------
-week = c(12,13,14,15,16)
+week = c(17,18,19,20)
+# week = 25
 
 # Direct Observation
-do_main_filtered <- do_main %>% filter(Distributed_Covid19_Relief != "Nothing [end of questionnaire – surveyor to call head office]" & Status == "Approved" & weekly_reporting_round %in% week)
+do_main_filtered <- do_main %>% filter(Distributed_Covid19_Relief != "Nothing [end of questionnaire – surveyor to call head office]" & Status == "Approved" & weekly_reporting_round %in% week)  %>% filter(Project_Name %notin%  c("CASA CSP Relif", "CASA CSP REACH", "KM"))
 do_Photos_Defects_rep_filtered <- do_Photos_Defects_rep %>%  filter(PARENT_KEY %in% do_main_filtered$KEY)
 do_Photo_Hand_Washing_filtered <- do_Photo_Hand_Washing %>%  filter(PARENT_KEY %in% do_main_filtered$KEY)
 do_cases_brought_surveyors_filtered <- do_cases_brought_surveyors %>%  filter(PARENT_KEY %in% do_main_filtered$KEY)
@@ -571,8 +670,9 @@ do_list_filtered <- list(
 )
 
 ### Pre-distribution Form1
-form1_main_filtered <- form1_main %>% filter(Are_You_Willing_To_Be_Interviewed == "Yes" & Status == "Approved" & weekly_reporting_round %in% week)
+form1_main_filtered <- form1_main %>% filter(Are_You_Willing_To_Be_Interviewed == "Yes" & Status == "Approved" & weekly_reporting_round %in% week) %>% filter(Project_Name %notin%  c("CASA CSP Relif", "CASA CSP REACH", "KM"))
 form1_beneficiary_list_photos_filtered <- form1_beneficiary_list_photos %>%  filter(PARENT_KEY %in% form1_main_filtered$KEY)
+
 
 form1_list_filtered <- list(
   data = form1_main_filtered,
@@ -581,21 +681,97 @@ form1_list_filtered <- list(
 
 
 ### Pre-distribution From2
-form2_main_filtered <- form2_main %>% filter(Status == "Approved" & weekly_reporting_round %in% week)
+form2_main_filtered <- form2_main %>% filter(Status == "Approved" & weekly_reporting_round %in% week) %>% filter(Project_Name %notin%  c("CASA CSP Relif", "CASA CSP REACH", "KM"))
 form2_Benificiary_Door_To_Door_filtered <- form2_Benificiary_Door_To_Door %>%  filter(Are_You_Willing_To_Be_Interviewed == "Yes" & PARENT_KEY %in% form2_main_filtered$KEY)
+form2_rep_Absent_For_interview_filtered <- form2_rep_Absent_For_interview %>%  filter(PARENT_KEY %in% form2_main_filtered$KEY)
 form2_HH_Not_found_filtered <- form2_HH_Not_found %>% filter(Do_You_Agree_To_Being_Interviewed == "Yes" & PARENT_KEY %in% form2_main_filtered$KEY)
 form2_HH_Not_found_One_One_filtered <- form2_HH_Not_found_One_One %>% filter(PARENT_KEY %in% form2_main_filtered$KEY)
 
 form2_list_filtered <- list(
   data = form2_main_filtered,
   Benificiary_Door_To_Door = form2_Benificiary_Door_To_Door_filtered,
+  rep_Absent_For_interview = form2_rep_Absent_For_interview_filtered,
   HH_Not_found = form2_HH_Not_found_filtered,
   HH_Not_found_One_One = form2_HH_Not_found_One_One_filtered
 )
 
 
-week <- "_12_to_16" # temporary, just for monthly
+week <- "M5" # temporary, just for monthly
 write.xlsx(do_list_filtered, paste0("output/week_specific/direct_observation/REACH Direct Observation Form_",today(),"_Week",week,".xlsx" ))
 write.xlsx(form1_list_filtered, paste0("output/week_specific/pre_distribution_form1/REACH PRE-DISTRIBUTION FORM 1_",today(),"_Week",week,".xlsx" ))
 write.xlsx(form2_list_filtered, paste0("output/week_specific/pre_distribution_form2/REACH PRE-DISTRIBUTION FORM 2_",today(),"_Week",week,".xlsx" ))
+
+
+
+
+
+
+# KM Data -----------------------------------------------------------------
+
+week = 25
+
+
+# Direct Observation
+do_main_filtered <- do_main %>% filter(Distributed_Covid19_Relief != "Nothing [end of questionnaire – surveyor to call head office]" & Status == "Approved" & weekly_reporting_round %in% week)  %>% filter(Project_Name %in%  c("KM"))
+do_Photos_Defects_rep_filtered <- do_Photos_Defects_rep %>%  filter(PARENT_KEY %in% do_main_filtered$KEY)
+do_Photo_Hand_Washing_filtered <- do_Photo_Hand_Washing %>%  filter(PARENT_KEY %in% do_main_filtered$KEY)
+do_cases_brought_surveyors_filtered <- do_cases_brought_surveyors %>%  filter(PARENT_KEY %in% do_main_filtered$KEY)
+do_Hh_Headed_Woman_interview_filtered <- do_Hh_Headed_Woman_interview %>%  filter(PARENT_KEY %in% do_main_filtered$KEY)
+do_From1photo_filtered <- do_From1photo %>%  filter(PARENT_KEY %in% do_main_filtered$KEY)
+do_from2phto_filtered <- do_from2phto %>%  filter(PARENT_KEY %in% do_main_filtered$KEY)
+do_form3photo_filtered <- do_form3photo %>%  filter(PARENT_KEY %in% do_main_filtered$KEY)
+do_form4aphoto_filtered <- do_form4aphoto %>%  filter(PARENT_KEY %in% do_main_filtered$KEY)
+do_form4bphoto_filtered <- do_form4bphoto %>%  filter(PARENT_KEY %in% do_main_filtered$KEY)
+do_from5photo_filtered <- do_from5photo %>%  filter(PARENT_KEY %in% do_main_filtered$KEY)
+
+
+do_list_filtered <- list(
+  data = do_main_filtered,
+  Photos_Defects_rep = do_Photos_Defects_rep_filtered,
+  Photo_Hand_Washing = do_Photo_Hand_Washing_filtered,
+  cases_brought_surveyors = do_cases_brought_surveyors_filtered,
+  Hh_Headed_Woman_interview = do_Hh_Headed_Woman_interview_filtered,
+  From1photo = do_From1photo_filtered,
+  from2phto = do_from2phto_filtered,
+  form3photo = do_form3photo_filtered,
+  form4aphoto = do_form4aphoto_filtered,
+  form4bphoto = do_form4bphoto_filtered,
+  from5photo = do_from5photo_filtered
+  
+)
+
+### Pre-distribution Form1
+form1_main_filtered <- form1_main %>% filter(Are_You_Willing_To_Be_Interviewed == "Yes" & Status == "Approved" & weekly_reporting_round %in% week) %>% filter(Project_Name %in%  c("KM"))
+form1_beneficiary_list_photos_filtered <- form1_beneficiary_list_photos %>%  filter(PARENT_KEY %in% form1_main_filtered$KEY)
+
+
+form1_list_filtered <- list(
+  data = form1_main_filtered,
+  beneficiary_list_photos = form1_beneficiary_list_photos_filtered
+)
+
+
+### Pre-distribution From2
+form2_main_filtered <- form2_main %>% filter(Status == "Approved" & weekly_reporting_round %in% week) %>% filter(Project_Name %in%  c("KM"))
+form2_Benificiary_Door_To_Door_filtered <- form2_Benificiary_Door_To_Door %>%  filter(Are_You_Willing_To_Be_Interviewed == "Yes" & PARENT_KEY %in% form2_main_filtered$KEY)
+form2_rep_Absent_For_interview_filtered <- form2_rep_Absent_For_interview %>%  filter(PARENT_KEY %in% form2_main_filtered$KEY)
+form2_HH_Not_found_filtered <- form2_HH_Not_found %>% filter(Do_You_Agree_To_Being_Interviewed == "Yes" & PARENT_KEY %in% form2_main_filtered$KEY)
+form2_HH_Not_found_One_One_filtered <- form2_HH_Not_found_One_One %>% filter(PARENT_KEY %in% form2_main_filtered$KEY)
+
+form2_list_filtered <- list(
+  data = form2_main_filtered,
+  Benificiary_Door_To_Door = form2_Benificiary_Door_To_Door_filtered,
+  rep_Absent_For_interview = form2_rep_Absent_For_interview_filtered,
+  HH_Not_found = form2_HH_Not_found_filtered,
+  HH_Not_found_One_One = form2_HH_Not_found_One_One_filtered
+)
+
+
+# week <- "_12_to_16" # temporary, just for monthly
+write.xlsx(do_list_filtered, paste0("output/week_specific/direct_observation/KM/KM_REACH Direct Observation Form_",today(),"_Week",week,".xlsx" ))
+write.xlsx(form1_list_filtered, paste0("output/week_specific/pre_distribution_form1/KM/KM_REACH PRE-DISTRIBUTION FORM 1_",today(),"_Week",week,".xlsx" ))
+write.xlsx(form2_list_filtered, paste0("output/week_specific/pre_distribution_form2/KM/KM_REACH PRE-DISTRIBUTION FORM 2_",today(),"_Week",week,".xlsx" ))
+
+
+
 
